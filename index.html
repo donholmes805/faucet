@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fitochain Testnet Faucet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // This is a placeholder for environment variables.
+      // In a real Vite setup, these would be in a .env file.
+      // For this single-file setup, we define them here.
+      window.process = {
+        env: {
+          // For production (Vercel), this must be an empty string ('').
+          // For local development, change it back to 'http://localhost:8080'.
+          VITE_API_BASE_URL: '',
+          VITE_TESTNET_EXPLORER_URL: 'https://explorer-testnet.fitochain.com', // Corrected explorer URL
+          VITE_TESTNET_CHAIN_ID: '1233', // From user-provided network info
+          VITE_TESTNET_RPC_URL: 'https://rpc-testnet.fitochain.com' // RPC URL for wallet to connect
+        }
+      };
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "react": "https://esm.sh/react@^19.1.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "ethers": "https://esm.sh/ethers@^6.15.0",
+    "express": "https://esm.sh/express@^5.1.0",
+    "dotenv": "https://esm.sh/dotenv@^17.2.0",
+    "cors": "https://esm.sh/cors@^2.8.5",
+    "@google/genai": "https://esm.sh/@google/genai@^1.10.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-gray-900">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "name": "Fitochain Testnet Faucet",
+  "description": "A faucet to dispense free FITO tokens on the Fitochain testnet for developers to deploy smart contracts and debug transactions. It features wallet connection, reCAPTCHA verification, and provides transaction feedback.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}

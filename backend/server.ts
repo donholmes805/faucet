@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
 import cors from 'cors';
 import { ethers } from 'ethers';
 import dotenv from 'dotenv';
@@ -27,11 +27,11 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 const requestTimestamps = new Map<string, number>();
 const RATE_LIMIT_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-app.get('/api/health', (req: Request, res: Response) => {
+app.get('/api/health', (req: express.Request, res: express.Response) => {
     res.status(200).json({ status: 'ok' });
 });
 
-app.get('/api/captcha-question', async (req: Request, res: Response) => {
+app.get('/api/captcha-question', async (req: express.Request, res: express.Response) => {
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
@@ -54,7 +54,7 @@ app.get('/api/captcha-question', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/request-tokens', async (req: Request, res: Response) => {
+app.post('/api/request-tokens', async (req: express.Request, res: express.Response) => {
   const { address, question, userAnswer } = req.body;
 
   if (!ethers.isAddress(address)) {

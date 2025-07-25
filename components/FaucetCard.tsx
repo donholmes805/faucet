@@ -12,12 +12,14 @@ const FaucetCard: React.FC = () => {
   const [userAnswer, setUserAnswer] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState<NotificationState | null>(null);
-  const [captchaQuestion, setCaptchaQuestion] = useState<string>('Loading question...');
+  const [captchaQuestion, setCaptchaQuestion] = useState<string>('');
   const [isCaptchaLoading, setIsCaptchaLoading] = useState(true);
+  const [captchaError, setCaptchaError] = useState(false);
 
   const fetchQuestion = useCallback(async () => {
     setIsCaptchaLoading(true);
     setNotification(null);
+    setCaptchaError(false);
     try {
       const question = await getCaptchaQuestion();
       setCaptchaQuestion(question);
@@ -40,6 +42,7 @@ const FaucetCard: React.FC = () => {
 
     setIsLoading(true);
     setNotification(null);
+    setCaptchaError(false);
 
     try {
       const result = await requestTokens(address, captchaQuestion, userAnswer);
@@ -56,8 +59,9 @@ const FaucetCard: React.FC = () => {
         type: NotificationType.Error,
         message: errorMessage,
       });
-      // If the answer was wrong, fetch a new question.
+      // If the answer was wrong, fetch a new question and show input error.
       if (errorMessage.toLowerCase().includes('captcha') || errorMessage.toLowerCase().includes('incorrect')) {
+        setCaptchaError(true);
         fetchQuestion();
       }
     } finally {
@@ -69,31 +73,31 @@ const FaucetCard: React.FC = () => {
   const isButtonDisabled = !address || !userAnswer.trim() || isLoading || isWrongNetwork || isCaptchaLoading;
 
   return (
-    <div className="w-full max-w-lg bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl shadow-2xl shadow-cyan-500/10 overflow-hidden">
+    <div className="w-full max-w-lg bg-gray-50 border border-gray-200 rounded-2xl shadow-lg shadow-gray-200/50 overflow-hidden">
       <div className="p-6 sm:p-8">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-white">Get Testnet {FAUCET_TOKEN_SYMBOL}</h2>
-          <p className="mt-2 text-sm text-gray-400">
+          <h2 className="text-xl font-semibold text-gray-900">Get Testnet {FAUCET_TOKEN_SYMBOL}</h2>
+          <p className="mt-2 text-sm text-gray-600">
             Get {FAUCET_TOKEN_AMOUNT} {FAUCET_TOKEN_SYMBOL} every {RATE_LIMIT_HOURS} hours for the {TESTNET_NAME}.
           </p>
         </div>
 
         <div className="mt-8 space-y-6">
           {isWrongNetwork && (
-            <div className="rounded-md bg-yellow-900/30 p-4 border border-yellow-500/50">
+            <div className="rounded-md bg-yellow-100 p-4 border border-yellow-200">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400" aria-hidden="true" />
+                  <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" aria-hidden="true" />
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-yellow-300">Wrong Network Detected</h3>
-                  <div className="mt-2 text-sm text-yellow-400">
+                  <h3 className="text-sm font-medium text-yellow-800">Wrong Network Detected</h3>
+                  <div className="mt-2 text-sm text-yellow-700">
                     <p>Your wallet is not connected to the {TESTNET_NAME}.</p>
                   </div>
                   <div className="mt-4">
                     <button
                       onClick={switchOrAddNetwork}
-                      className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-gray-900 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-yellow-900/30 focus:ring-yellow-500"
+                      className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-gray-900 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-yellow-100 focus:ring-yellow-500"
                     >
                       Switch to {TESTNET_NAME}
                     </button>
@@ -104,21 +108,27 @@ const FaucetCard: React.FC = () => {
           )}
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Wallet Address</label>
+            <label className="text-sm font-medium text-gray-800">Wallet Address</label>
             {address ? (
-              <div className="flex items-center w-full p-3 bg-gray-900 border border-gray-700 rounded-lg">
-                <WalletIcon className="h-5 w-5 text-cyan-400 mr-3 shrink-0" />
-                <span className="text-sm text-gray-300 truncate font-mono">{address}</span>
+              <div className="flex items-center w-full p-3 bg-white border border-gray-300 rounded-lg">
+                <WalletIcon className="h-5 w-5 text-gray-600 mr-3 shrink-0" />
+                <span className="text-sm text-gray-800 truncate font-mono">{address}</span>
               </div>
             ) : (
               <ConnectWalletButton connectWallet={connectWallet} isLoading={isConnecting} />
             )}
-            {walletError && <p className="text-xs text-red-400 mt-1">{walletError}</p>}
+            {walletError && <p className="text-xs text-red-600 mt-1">{walletError}</p>}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="bot-check" className="text-sm font-medium text-gray-300">Anti-Bot Verification</label>
-            <p className="text-sm text-gray-400 min-h-[20px]">{captchaQuestion}</p>
+            <label htmlFor="bot-check" className="text-sm font-medium text-gray-800">Anti-Bot Verification</label>
+            <div className="min-h-[20px] flex items-center">
+              {isCaptchaLoading ? (
+                <div className="h-4 bg-gray-200 rounded-md animate-pulse w-3/4"></div>
+              ) : (
+                <p className="text-sm text-gray-600">{captchaQuestion}</p>
+              )}
+            </div>
             <input
               id="bot-check"
               type="text"
@@ -126,9 +136,14 @@ const FaucetCard: React.FC = () => {
               onChange={(e) => {
                 setUserAnswer(e.target.value);
                 if(notification) setNotification(null);
+                if(captchaError) setCaptchaError(false);
               }}
               placeholder="Your answer"
-              className="w-full p-3 bg-gray-900 border border-gray-700 rounded-lg focus:ring-cyan-500 focus:border-cyan-500 transition"
+              className={`w-full p-3 bg-white border rounded-lg transition text-gray-900 placeholder:text-gray-400 ${
+                captchaError
+                  ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                  : 'border-gray-300 focus:border-gray-500 focus:ring-gray-500'
+              }`}
               aria-describedby="bot-check-description"
               disabled={isWrongNetwork || isCaptchaLoading}
             />
@@ -138,7 +153,7 @@ const FaucetCard: React.FC = () => {
             <button
               onClick={handleRequestTokens}
               disabled={isButtonDisabled}
-              className="w-full flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-600 disabled:cursor-not-allowed disabled:text-gray-400 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-cyan-500"
+              className="w-full flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-gray-900 hover:bg-black disabled:bg-gray-200 disabled:cursor-not-allowed disabled:text-gray-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-gray-900"
             >
               {isLoading ? (
                 <>

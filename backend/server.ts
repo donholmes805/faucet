@@ -11,29 +11,68 @@ app.use(cors());
 app.use(express.json());
 
 const PORT = process.env.PORT || 8080;
-const FAUCET_PRIVATE_KEY = process.env.FAUCET_PRIVATE_KEY;
-const TESTNET_RPC_URL = process.env.TESTNET_RPC_URL;
-const FAUCET_SEND_AMOUNT = process.env.FAUCET_SEND_AMOUNT || '1000'; // Amount in FITO
 
-if (!FAUCET_PRIVATE_KEY || !TESTNET_RPC_URL || !process.env.API_KEY) {
-  throw new Error("Missing required environment variables: FAUCET_PRIVATE_KEY, TESTNET_RPC_URL, or API_KEY");
+// --- Service Initialization ---
+// We wrap initialization in a function to clearly separate setup from the Express app logic.
+// This also contains all dependencies so it's clear what's needed.
+function initializeServices() {
+    const FAUCET_PRIVATE_KEY = process.env.FAUCET_PRIVATE_KEY;
+    const TESTNET_RPC_URL = process.env.TESTNET_RPC_URL;
+    const API_KEY = process.env.API_KEY;
+
+    if (!FAUCET_PRIVATE_KEY || !TESTNET_RPC_URL || !API_KEY) {
+        const errorMsg = "Missing required environment variables. Ensure FAUCET_PRIVATE_KEY, TESTNET_RPC_URL, and API_KEY are set in the server environment.";
+        console.error(`[FATAL] Faucet initialization failed: ${errorMsg}`);
+        return { error: errorMsg };
+    }
+
+    try {
+        const provider = new ethers.JsonRpcProvider(TESTNET_RPC_URL);
+        const wallet = new ethers.Wallet(FAUCET_PRIVATE_KEY, provider);
+        const ai = new GoogleGenAI({ apiKey: API_KEY });
+        const FAUCET_SEND_AMOUNT = process.env.FAUCET_SEND_AMOUNT || '1000';
+        
+        console.log(`Faucet services initialized successfully. Wallet address: ${wallet.address}`);
+        return { provider, wallet, ai, FAUCET_SEND_AMOUNT, error: null };
+    } catch (e: any) {
+        const errorMsg = `Failed to initialize services: ${e.message}`;
+        console.error(`[FATAL] Faucet initialization failed during service setup:`, e);
+        return { error: errorMsg };
+    }
 }
 
-const provider = new ethers.JsonRpcProvider(TESTNET_RPC_URL);
-const wallet = new ethers.Wallet(FAUCET_PRIVATE_KEY, provider);
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const { provider, wallet, ai, FAUCET_SEND_AMOUNT, error: initError } = initializeServices();
+// --- End Service Initialization ---
+
 
 // In-memory store for rate limiting. For production, a database like Redis is recommended.
 const requestTimestamps = new Map<string, number>();
 const RATE_LIMIT_MS = 24 * 60 * 60 * 1000; // 24 hours
 
+// Middleware to check if services initialized correctly.
+// This prevents any route from running if the server isn't configured.
+const serviceCheckMiddleware = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (initError || !ai || !wallet || !provider) {
+        // Log the specific error on the server for easier debugging.
+        console.error(`Service check failed for request to ${req.path}: ${initError}`);
+        return res.status(503).json({ message: 'The faucet is temporarily unavailable due to a server configuration error.' });
+    }
+    next();
+};
+
+// A health check endpoint that doesn't use the serviceCheck middleware,
+// so we can diagnose the server status even if services are down.
 app.get('/api/health', (req: express.Request, res: express.Response) => {
-    res.status(200).json({ status: 'ok' });
+    if (initError) {
+        return res.status(503).json({ status: 'error', message: initError });
+    }
+    res.status(200).json({ status: 'ok', wallet: wallet?.address });
 });
 
-app.get('/api/captcha-question', async (req: express.Request, res: express.Response) => {
+// All functional routes are protected by the middleware.
+app.get('/api/captcha-question', serviceCheckMiddleware, async (req: express.Request, res: express.Response) => {
   try {
-    const response = await ai.models.generateContent({
+    const response = await ai!.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: `Generate a simple and short CAPTCHA-style question that most humans can answer easily. The answer should be a single word or number.
       Examples:
@@ -54,7 +93,7 @@ app.get('/api/captcha-question', async (req: express.Request, res: express.Respo
   }
 });
 
-app.post('/api/request-tokens', async (req: express.Request, res: express.Response) => {
+app.post('/api/request-tokens', serviceCheckMiddleware, async (req: express.Request, res: express.Response) => {
   const { address, question, userAnswer } = req.body;
 
   if (!ethers.isAddress(address)) {
@@ -67,7 +106,7 @@ app.post('/api/request-tokens', async (req: express.Request, res: express.Respon
   // Step 1: Verify CAPTCHA answer with Gemini
   try {
     const verificationPrompt = `Is "${userAnswer}" a correct answer for the question "${question}"? Consider common variations but be strict with math. Answer with only "true" or "false".`;
-    const response = await ai.models.generateContent({
+    const response = await ai!.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: verificationPrompt,
         config: { temperature: 0 } // Be deterministic for verification
@@ -97,9 +136,9 @@ app.post('/api/request-tokens', async (req: express.Request, res: express.Respon
   // Step 3: Send tokens
   try {
     console.log(`Sending ${FAUCET_SEND_AMOUNT} FITO to ${address}...`);
-    const amount = ethers.parseEther(FAUCET_SEND_AMOUNT);
+    const amount = ethers.parseEther(FAUCET_SEND_AMOUNT!);
     
-    const tx = await wallet.sendTransaction({
+    const tx = await wallet!.sendTransaction({
       to: address,
       value: amount,
     });
@@ -123,8 +162,11 @@ app.post('/api/request-tokens', async (req: express.Request, res: express.Respon
 // This listen block is for local development. Vercel handles this automatically.
 if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => {
-        console.log(`Faucet backend server running on port ${PORT}`);
-        console.log(`Faucet wallet address: ${wallet.address}`);
+        if (initError) {
+            console.error(`[ERROR] Faucet backend cannot start properly. See error above.`);
+        } else {
+            console.log(`Faucet backend server running on http://localhost:${PORT}`);
+        }
     });
 }
 

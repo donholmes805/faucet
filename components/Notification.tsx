@@ -14,9 +14,9 @@ const Notification: React.FC<NotificationProps> = ({ notification, onDismiss }) 
   const isError = notification.type === NotificationType.Error;
 
   const containerClasses = `w-full p-4 rounded-lg flex border ${
-    isSuccess ? 'bg-green-900/30 border-green-500/50 text-green-200' : ''
+    isSuccess ? 'bg-green-50 border-green-200 text-green-800' : ''
   } ${
-    isError ? 'bg-red-900/30 border-red-500/50 text-red-200' : ''
+    isError ? 'bg-red-50 border-red-200 text-red-800' : ''
   }`;
   
   const Icon = isSuccess ? CheckCircleIcon : ExclamationTriangleIcon;
@@ -24,7 +24,7 @@ const Notification: React.FC<NotificationProps> = ({ notification, onDismiss }) 
   return (
     <div className={containerClasses}>
       <div className="flex-shrink-0">
-        <Icon className={`h-5 w-5 ${isSuccess ? 'text-green-400' : 'text-red-400'}`} />
+        <Icon className={`h-5 w-5 ${isSuccess ? 'text-green-500' : 'text-red-500'}`} />
       </div>
       <div className="ml-3 flex-1">
         <p className="text-sm">{notification.message}</p>
@@ -34,7 +34,7 @@ const Notification: React.FC<NotificationProps> = ({ notification, onDismiss }) 
               href={`${TESTNET_EXPLORER_URL}/tx/${notification.hash}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center font-medium text-cyan-400 hover:text-cyan-300"
+              className="inline-flex items-center font-medium text-gray-800 hover:text-black underline"
             >
               View on Explorer
               <ExternalLinkIcon className="ml-1 h-3 w-3" />
@@ -46,9 +46,9 @@ const Notification: React.FC<NotificationProps> = ({ notification, onDismiss }) 
         <button
           onClick={onDismiss}
           className={`-mx-1.5 -my-1.5 p-1.5 rounded-lg inline-flex focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-            isSuccess ? 'hover:bg-green-800/50 focus:ring-offset-green-900/30 focus:ring-green-600' : ''
+            isSuccess ? 'hover:bg-green-100 focus:ring-offset-green-50 focus:ring-green-500' : ''
           } ${
-            isError ? 'hover:bg-red-800/50 focus:ring-offset-red-900/30 focus:ring-red-600' : ''
+            isError ? 'hover:bg-red-100 focus:ring-offset-red-50 focus:ring-red-500' : ''
           }`}
         >
           <span className="sr-only">Dismiss</span>

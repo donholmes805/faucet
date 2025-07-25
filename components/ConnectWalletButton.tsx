@@ -12,7 +12,7 @@ const ConnectWalletButton: React.FC<ConnectWalletButtonProps> = ({ connectWallet
     return (
       <button
         disabled
-        className="w-full flex items-center justify-center px-4 py-2 border border-dashed border-gray-600 rounded-lg text-gray-400 transition-colors duration-200"
+        className="w-full flex items-center justify-center px-4 py-2 border border-dashed border-gray-200 rounded-lg text-gray-500 transition-colors duration-200"
       >
         <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -26,7 +26,7 @@ const ConnectWalletButton: React.FC<ConnectWalletButtonProps> = ({ connectWallet
   return (
     <button
       onClick={connectWallet}
-      className="w-full flex items-center justify-center px-4 py-2 border border-dashed border-gray-600 rounded-lg text-gray-400 hover:text-white hover:border-gray-500 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-cyan-500"
+      className="w-full flex items-center justify-center px-4 py-2 border border-dashed border-gray-300 rounded-lg text-gray-500 hover:text-black hover:border-gray-400 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-gray-500"
     >
         <WalletIcon className="h-5 w-5 mr-2"/>
         Connect Wallet

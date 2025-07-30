@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fitochain Faucet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'fito-bg': '#111827',
+              'fito-bg-light': '#1f2937',
+              'fito-panel': '#374151',
+              'fito-green': '#10b981',
+              'fito-green-dark': '#059669',
+              'fito-text': '#d1d5db',
+              'fito-text-dark': '#9ca3af',
+              'fito-border': '#4b5563',
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+        body {
+            background-color: #111827;
+        }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.1.1",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.1/",
+    "react/": "https://esm.sh/react@^19.1.1/",
+    "ethers": "https://esm.sh/ethers@^6.15.0",
+    "@upstash/redis/": "https://esm.sh/@upstash/redis@^1.33.0/",
+    "@google/genai": "https://esm.sh/@google/genai@^0.15.0",
+    "react-markdown": "https://esm.sh/react-markdown@^9.0.1",
+    "remark-gfm": "https://esm.sh/remark-gfm@^4.0.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

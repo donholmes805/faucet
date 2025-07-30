@@ -1,0 +1,10 @@
+{
+  "name": "fitochain-faucet",
+  "version": "1.0.0",
+  "description": "A fully functional faucet for the Fitochain testnet.",
+  "dependencies": {
+    "@google/genai": "^0.15.0",
+    "ethers": "^6.13.1",
+    "@upstash/redis": "^1.33.0"
+  }
+}

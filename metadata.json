@@ -1,0 +1,6 @@
+{
+  "name": "Fitochain Faucet & AI Toolkit",
+  "description": "A multi-functional dApp for the Fitochain network. Get free testnet FITO tokens from the faucet, and leverage AI-powered tools to explain transactions, analyze smart contracts, and answer development questions.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
